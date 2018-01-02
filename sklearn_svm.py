@@ -17,42 +17,48 @@ y_train = np.loadtxt("data/T_train.csv", dtype=int)
 y_test = np.loadtxt("data/T_test.csv", dtype=int)
 
 
+def draw_heatmap():
+    # Draw heatmap of the validation accuracy as a function of gamma and C
+    #
+    # The score are encoded as colors with the hot colormap which varies from dark
+    # red to bright yellow. As the most interesting scores are all located in the
+    # 0.92 to 0.97 range we use a custom normalizer to set the mid-point to 0.92 so
+    # as to make it easier to visualize the small variations of score values in the
+    # interesting range while not brutally collapsing all the low score values to
+    # the same color.
+
+    plt.figure(figsize=(8, 6))
+    plt.subplots_adjust(left=0.2, right=0.95, bottom=0.15, top=0.95)
+    plt.imshow(scores, interpolation='nearest', cmap=plt.cm.hot,
+               norm=MidpointNormalize(vmin=0.2, midpoint=0.92))
+    plt.xlabel('gamma')
+    plt.ylabel('C')
+    plt.colorbar()
+    plt.xticks(np.arange(len(gamma_range)), gamma_range, rotation=45)
+    plt.yticks(np.arange(len(C_range)), C_range)
+    plt.title('Validation accuracy')
+    plt.savefig("grid_search_heatmap.png")
+
+
 # SVM
-print("Grid searching")
-C_range = np.logspace(-2, 6, 5, base=2)
-gamma_range = np.logspace(-7, 0, 5, base=2)
-param_grid = dict(gamma=gamma_range, C=C_range)
-cv = StratifiedShuffleSplit(n_splits=5, test_size=0.2, random_state=42)
-grid = GridSearchCV(svm.SVC(), param_grid=param_grid, cv=2)
-grid.fit(x_train, y_train)
-print("The best parameters are %s with a score of %0.2f" % (grid.best_params_, grid.best_score_))
-scores = grid.cv_results_['mean_test_score'].reshape(len(C_range), len(gamma_range))
+print("Classifying...")
 
-# Draw heatmap of the validation accuracy as a function of gamma and C
-#
-# The score are encoded as colors with the hot colormap which varies from dark
-# red to bright yellow. As the most interesting scores are all located in the
-# 0.92 to 0.97 range we use a custom normalizer to set the mid-point to 0.92 so
-# as to make it easier to visualize the small variations of score values in the
-# interesting range while not brutally collapsing all the low score values to
-# the same color.
-
-plt.figure(figsize=(8, 6))
-plt.subplots_adjust(left=0.2, right=0.95, bottom=0.15, top=0.95)
-plt.imshow(scores, interpolation='nearest', cmap=plt.cm.hot,
-           norm=MidpointNormalize(vmin=0.2, midpoint=0.92))
-plt.xlabel('gamma')
-plt.ylabel('C')
-plt.colorbar()
-plt.xticks(np.arange(len(gamma_range)), gamma_range, rotation=45)
-plt.yticks(np.arange(len(C_range)), C_range)
-plt.title('Validation accuracy')
-plt.savefig("grid_search_heatmap.png")
-
+# Remember to uncomment the following lines to do grid search
+# print("Grid searching")
+# C_range = np.logspace(-2, 6, 5, base=2)
+# gamma_range = np.logspace(-7, 0, 5, base=2)
+# param_grid = dict(gamma=gamma_range, C=C_range)
+# cv = StratifiedShuffleSplit(n_splits=5, test_size=0.2, random_state=42)
+# grid = GridSearchCV(svm.SVC(), param_grid=param_grid, cv=2)
+# grid.fit(x_train, y_train)
+# print("The best parameters are %s with a score of %0.2f" % (grid.best_params_, grid.best_score_))
+# scores = grid.cv_results_['mean_test_score'].reshape(len(C_range), len(gamma_range))
+# draw_heatmap()
 
 print("Training...")
 # Optimal C=4, gamma=0.026780129
-clf = svm.SVC(C=grid.best_params_['C'], gamma=grid.best_params_['gamma'])
+# clf = svm.SVC(C=grid.best_params_['C'], gamma=grid.best_params_['gamma'])
+clf = svm.SVC(C=4, gamma=0.026780129)
 clf.fit(x_train, y_train)
 joblib.dump(clf, 'classifier.pkl')
 
