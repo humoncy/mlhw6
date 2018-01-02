@@ -2,5 +2,6 @@
 *.mov
 heart*
 *.pages
-0556634**
 *pycache*
+0556634*
+*.xml
